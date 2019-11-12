@@ -47,9 +47,9 @@ INSTALLED_APPS = [
 ]
 
 
-PAYTM_MERCHANT_KEY=  "<_lrzC5RfvQzjZtqZ>"
-PAYTM_MERCHANT_ID = "<BUfEWY28036097078675>"
-PAYTM_CALLBACK_URL = "http://localhost:8000/response/"
+# PAYTM_MERCHANT_KEY=  "<_lrzC5RfvQzjZtqZ>"
+# PAYTM_MERCHANT_ID = "<BUfEWY28036097078675>"
+# PAYTM_CALLBACK_URL = "http://localhost:8000/response/"
 
 
 MIDDLEWARE = [
@@ -138,15 +138,15 @@ STATICFILES_DIRS = (
 
 
 
-PAYTM_MERCHANT_KEY = "<_lrzC5RfvQzjZtqZ>"
-PAYTM_MERCHANT_ID = "<BUfEWY28036097078675>"
+PAYTM_MERCHANT_KEY = "_lrzC5RfvQzjZtqZ"
+PAYTM_MERCHANT_ID = "BUfEWY28036097078675"
 HOST_URL = "http://localhost:8080"
-PAYTM_CALLBACK_URL = "/paytm/response/"
+PAYTM_CALLBACK_URL ="/paytm/response/"
 
 if DEBUG:
-    PAYTM_MERCHANT_KEY = "xxxx"
-    PAYTM_MERCHANT_ID = "xxxx"
-    PAYTM_WEBSITE = 'WEB_STAGING'
+    PAYTM_MERCHANT_KEY = "_lrzC5RfvQzjZtqZ"
+    PAYTM_MERCHANT_ID = "BUfEWY28036097078675"
+    PAYTM_WEBSITE = 'WEBSTAGING'
     HOST_URL = 'http://localhost:8000'
     '''
     In sandbox enviornment you can use following wallet credentials to login and make payment.

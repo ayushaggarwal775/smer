@@ -4,6 +4,7 @@ from django.utils.translation import get_language
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+import random
 
 from paytm import Checksum
 
@@ -28,16 +29,17 @@ def payment(request):
     if bill_amount:
         data_dict = {
                     'MID':MERCHANT_ID,
-                    'ORDER_ID':str('1'),
+                    'ORDER_ID':str(order_id),
                     'TXN_AMOUNT': str(bill_amount),
                     'CUST_ID':'harish@pickrr.com',
                     'INDUSTRY_TYPE_ID':'Retail',
                     'WEBSITE': settings.PAYTM_WEBSITE,
                     'CHANNEL_ID':'WEB',
-                    #'CALLBACK_URL':CALLBACK_URL,
+                    'CALLBACK_URL': 'http://localhost:8000/paytm/response'
                 }
-        param_dict = data_dict
-        param_dict['CHECKSUMHASH'] = Checksum.generate_checksum(data_dict, MERCHANT_KEY)
+        
+        param_dict = data_dict        
+        param_dict['CHECKSUMHASH'] = Checksum.generate_checksum(param_dict, MERCHANT_KEY)
         return render(request,"payment.html",{'paytmdict':param_dict})
     return HttpResponse("Bill Amount Could not find. ?bill_amount=10")
 
@@ -51,7 +53,8 @@ def response(request):
             data_dict[key] = request.POST[key]
         verify = Checksum.verify_checksum(data_dict, MERCHANT_KEY, data_dict['CHECKSUMHASH'])
         if verify:
-            PaytmHistory.objects.create(user=request.user, **data_dict)
+            print('--------------',request.user)
+            # PaytmHistory.objects.create(user=request.user, **data_dict)
             return render(request,"response.html",{"paytm":data_dict})
         else:
             return HttpResponse("checksum verify failed")
