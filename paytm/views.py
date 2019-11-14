@@ -5,9 +5,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 import random
-
 from paytm import Checksum
-
+from django.contrib.auth.models import User
 
 from paytm.models import PaytmHistory
 # Create your views here.
@@ -18,6 +17,7 @@ def home(request):
 
 
 def payment(request):
+    print('4---------', request.user)
     MERCHANT_KEY = settings.PAYTM_MERCHANT_KEY
     MERCHANT_ID = settings.PAYTM_MERCHANT_ID
     get_lang = "/" + get_language() if get_language() else ''
@@ -25,7 +25,8 @@ def payment(request):
     # Generating unique temporary ids
     order_id = Checksum.__id_generator__()
 
-    bill_amount = 100
+    bill_amount = 5
+    print(settings.PAYTM_CALLBACK_URL)
     if bill_amount:
         data_dict = {
                     'MID':MERCHANT_ID,
@@ -35,7 +36,7 @@ def payment(request):
                     'INDUSTRY_TYPE_ID':'Retail',
                     'WEBSITE': settings.PAYTM_WEBSITE,
                     'CHANNEL_ID':'WEB',
-                    'CALLBACK_URL': 'http://localhost:8000/paytm/response'
+                    'CALLBACK_URL': settings.HOST_URL + settings.PAYTM_CALLBACK_URL
                 }
         
         param_dict = data_dict        
@@ -46,16 +47,22 @@ def payment(request):
 
 @csrf_exempt
 def response(request):
-    if request.method == "POST":
-        MERCHANT_KEY = settings.PAYTM_MERCHANT_KEY
-        data_dict = {}
-        for key in request.POST:
-            data_dict[key] = request.POST[key]
-        verify = Checksum.verify_checksum(data_dict, MERCHANT_KEY, data_dict['CHECKSUMHASH'])
-        if verify:
-            print('--------------',request.user)
-            # PaytmHistory.objects.create(user=request.user, **data_dict)
-            return render(request,"response.html",{"paytm":data_dict})
-        else:
-            return HttpResponse("checksum verify failed")
-    return HttpResponse(status=200)
+    try:
+        if request.method == "POST":
+            MERCHANT_KEY = settings.PAYTM_MERCHANT_KEY
+            data_dict = {}
+            for key in request.POST:
+                data_dict[key] = request.POST[key]
+            verify = Checksum.verify_checksum(data_dict, MERCHANT_KEY, data_dict['CHECKSUMHASH'])
+            if verify:
+                print('3--------------',request.user, type(request), User.objects.get(username = request.COOKIES.get('ucno')), type(User.objects.get(username = request.COOKIES.get('ucno'))) ) 
+                user_obj = User.objects.get(username = request.COOKIES.get('ucno'))
+                PaytmHistory.objects.create(user = user_obj, **data_dict)
+                return render(request,"response.html",{"paytm":data_dict})
+            else:
+                return HttpResponse("checksum verify failed")
+        return HttpResponse(status=200)
+
+    except Exception as e:
+        print('error in paytm respose', e)
+        return HttpResponse(status=400)

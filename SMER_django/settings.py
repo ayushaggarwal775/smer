@@ -144,8 +144,8 @@ HOST_URL = "http://localhost:8080"
 PAYTM_CALLBACK_URL ="/paytm/response/"
 
 if DEBUG:
-    PAYTM_MERCHANT_KEY = "_lrzC5RfvQzjZtqZ"
-    PAYTM_MERCHANT_ID = "BUfEWY28036097078675"
+    PAYTM_MERCHANT_KEY = "0HRJ#zXolD0FUysX"
+    PAYTM_MERCHANT_ID = "xxXrXE19912074247357"
     PAYTM_WEBSITE = 'WEBSTAGING'
     HOST_URL = 'http://localhost:8000'
     '''

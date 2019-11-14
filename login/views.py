@@ -1,21 +1,29 @@
 from django.shortcuts import render , redirect
 from django.http import HttpResponse
 import requests
-from user_profile.models import User
-
+from user_profile import models
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
+import random
 def send_otp(request):
-    if(request.COOKIES.get('loggedIn')):
-        responsetoredirect = redirect('/profile/')
-        return responsetoredirect
-    elif(request.method == 'POST'):
-        no = request.POST['number']
-        response = requests.get('https://2factor.in/API/V1/8b16b93c-ef4f-11e9-b828-0200cd936042/SMS/%s/AUTOGEN' % no)
-        msg = response.json()
-        return render(request, 'confirm_otp.html', {
-            'Status': msg['Status'],
-            'Details': msg['Details'],
-            'cno' : no
-        })
+    try:
+        if(request.COOKIES.get('loggedIn')):
+            responsetoredirect = redirect('/profile/')
+            return responsetoredirect
+        elif(request.method == 'POST'):
+            no = request.POST['number']
+        #     response = requests.get('https://2factor.in/API/V1/7e7c9082-0616-11ea-9fa5-0200cd936042/SMS/%s/AUTOGEN' % no)
+        #     msg = response.json()
+            # TODO delete 
+            msg= {'Status' : 'Success', 'Details' : "lol"}
+            return render(request, 'confirm_otp.html', {
+                'Status': msg['Status'],
+                'Details': msg['Details'],
+                'cno' : no
+            })
+        
+    except Exception as e:
+        print('error in sending otp', str(e))
     return render(request,'login.html')
 
 def verify_otp(request):
@@ -24,10 +32,16 @@ def verify_otp(request):
             otp = request.POST['otp']
             session_id = request.POST['Details']
             cno = request.POST['cno']
-            response = requests.get('https://2factor.in/API/V1/8b16b93c-ef4f-11e9-b828-0200cd936042/SMS/VERIFY/%s/%s' % (session_id , otp))
-            msg = response.json()
+            # response = requests.get('https://2factor.in/API/V1/7e7c9082-0616-11ea-9fa5-0200cd936042/SMS/VERIFY/%s/%s' % (session_id , otp))
+            # msg = response.json()
+            # TODO undo
+            msg = {'Status' : 'Success'}
             if(msg['Status'] == 'Success'):
-                user = User.objects.get_or_create(contact_number=cno)
+                password = random.randint(100000000, 999999999)
+                user = User.objects.create_user(username = cno, password = password)
+                auth = authenticate(request, username = cno, password = password)
+                login(request, auth)
+                user_profile = models.User.objects.get_or_create(contact_number = cno)
                 # responsetosend = render(request, 'welcome.html',{
                 #     'Status': msg['Status'],
                 #     'Details': msg['Details']
@@ -35,13 +49,14 @@ def verify_otp(request):
                 responsetosend = redirect('/profile/')
                 responsetosend.set_cookie(key='loggedIn', value=True , max_age=60*60*24)
                 responsetosend.set_cookie(key='ucno', value=cno,max_age=60*60*24)
+                print('2------------', request.user, auth)
                 return responsetosend
             return render(request, 'confirm_otp.html', {
                 'Status': msg['Status'],
                 'Details': msg['Details']
             })
-    except:
-        print('exception in verify otp')
+    except Exception as e:
+        print('exception in verify otp', e)
         return render(request,'confirm_otp.html')
     
 
