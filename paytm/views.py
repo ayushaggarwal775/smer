@@ -81,6 +81,8 @@ def payment(request):
                     'WEBSITE': 'WEBSTAGING',
                     'CHANNEL_ID':'WEB',
                     'CALLBACK_URL': CALLBACK_URL,
+                    'PAYMENT_MODE_ONLY': 'YES',
+                    'PAYMENT_TYPE_ID': 'PPI',
                 }
         param_dict = data_dict
         param_dict['CHECKSUMHASH'] = Checksum.generate_checksum(data_dict, MERCHANT_KEY)

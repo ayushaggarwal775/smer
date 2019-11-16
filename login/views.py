@@ -12,10 +12,9 @@ def send_otp(request):
             return responsetoredirect
         elif(request.method == 'POST'):
             no = request.POST['number']
-        #     response = requests.get('https://2factor.in/API/V1/7e7c9082-0616-11ea-9fa5-0200cd936042/SMS/%s/AUTOGEN' % no)
-        #     msg = response.json()
-            # TODO delete 
-            msg= {'Status' : 'Success', 'Details' : "lol"}
+            response = requests.get('https://2factor.in/API/V1/7e7c9082-0616-11ea-9fa5-0200cd936042/SMS/%s/AUTOGEN' % no)
+            msg = response.json()
+           
             return render(request, 'confirm_otp.html', {
                 'Status': msg['Status'],
                 'Details': msg['Details'],
@@ -32,14 +31,14 @@ def verify_otp(request):
             otp = request.POST['otp']
             session_id = request.POST['Details']
             cno = request.POST['cno']
-            # response = requests.get('https://2factor.in/API/V1/7e7c9082-0616-11ea-9fa5-0200cd936042/SMS/VERIFY/%s/%s' % (session_id , otp))
-            # msg = response.json()
-            # TODO undo
-            msg = {'Status' : 'Success'}
+            response = requests.get('https://2factor.in/API/V1/7e7c9082-0616-11ea-9fa5-0200cd936042/SMS/VERIFY/%s/%s' % (session_id , otp))
+            msg = response.json()
+            print('verify otp ', msg)
             if(msg['Status'] == 'Success'):
                 password = random.randint(100000000, 999999999)
-                user = User.objects.create_user(username = cno, password = password)
-                auth = authenticate(request, username = cno, password = password)
+                if User.objects.filter(username=cno).exists() is False:
+                    user = User.objects.create_user(username = cno, password = 'abc')
+                auth = authenticate(request, username = cno, password = 'abc')
                 login(request, auth)
                 user_profile = models.User.objects.get_or_create(contact_number = cno)
                 # responsetosend = render(request, 'welcome.html',{
