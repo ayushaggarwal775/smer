@@ -1,11 +1,13 @@
 from django.shortcuts import render
-from user_profile.models import User
+from django.contrib.auth.models import User
 from django.http import HttpResponse
+from django.views import View
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
+@login_required(login_url='/login')
 def get_user_profile(request):
-    cno = request.COOKIES.get('ucno')
-    user = User.objects.get(contact_number=cno)
+    user = User.objects.get(username=request.user.username)
     if(request.method == 'POST'):
         user.username = request.POST['username']
         user.email = request.POST['email']
@@ -26,3 +28,10 @@ def get_user_profile(request):
         'status':'warning',
         'msg':'Update your Profile Information'
     })
+
+class orders(View):
+    def get(self, request):
+        user_obj = User.objects.get(username = request.user.username)
+        orders = list(user_obj.rel_payment_paytm.all().values())
+        print('orders ', orders)
+        return render(request, 'orders.html', {"msg": "success", "orders": orders})

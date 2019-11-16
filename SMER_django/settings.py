@@ -50,7 +50,9 @@ INSTALLED_APPS = [
 # PAYTM_MERCHANT_KEY=  "<_lrzC5RfvQzjZtqZ>"
 # PAYTM_MERCHANT_ID = "<BUfEWY28036097078675>"
 # PAYTM_CALLBACK_URL = "http://localhost:8000/response/"
-
+AUTHENTICATION_BACKENDS = (
+        'django.contrib.auth.backends.ModelBackend',
+    )
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

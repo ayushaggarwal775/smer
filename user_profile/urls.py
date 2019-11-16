@@ -4,4 +4,5 @@ from user_profile import views
 
 urlpatterns = [
     path('', views.get_user_profile , name="get_user_profile" ),
+    path('orders', views.orders.as_view())
 ]

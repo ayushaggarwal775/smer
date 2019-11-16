@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.utils.translation import get_language
 from django.views.decorators.csrf import csrf_exempt
@@ -69,21 +69,18 @@ def payment(request):
     # Generating unique temporary ids
     order_id = Checksum.__id_generator__()
 
-    bill_amount = 100
+    bill_amount = 10
     if bill_amount:
         data_dict = {
                     'MID':MERCHANT_ID,
                     'ORDER_ID':str(order_id),
-                    'MOBILE_NO': '7777777777',
                     'TXN_AMOUNT': str(bill_amount),
                     'CUST_ID':'eieojiojoi@gmail.com',
                     'INDUSTRY_TYPE_ID':'Retail',
                     'WEBSITE': 'WEBSTAGING',
                     'CHANNEL_ID':'WEB',
                     'CALLBACK_URL': CALLBACK_URL,
-                    'PAYMENT_MODE_ONLY': 'YES',
-                    'PAYMENT_TYPE_ID': 'PPI',
-                }
+                    }
         param_dict = data_dict
         param_dict['CHECKSUMHASH'] = Checksum.generate_checksum(data_dict, MERCHANT_KEY)
         return render(request,"payment.html",{'paytmdict':param_dict})
@@ -92,7 +89,6 @@ def payment(request):
 @csrf_exempt
 def response(request):
     try:
-        print('paytm response data ', request.POST)
         if request.method == "POST":
             MERCHANT_KEY = settings.PAYTM_MERCHANT_KEY
             data_dict = {}
@@ -100,10 +96,10 @@ def response(request):
                 data_dict[key] = request.POST[key]
             verify = Checksum.verify_checksum(data_dict, MERCHANT_KEY, data_dict['CHECKSUMHASH'])
             if verify:
-                print('3--------------',request.user, type(request), User.objects.get(username = request.COOKIES.get('ucno')), type(User.objects.get(username = request.COOKIES.get('ucno'))) ) 
+                 
                 user_obj = User.objects.get(username = request.COOKIES.get('ucno'))
                 PaytmHistory.objects.create(user = user_obj, **data_dict)
-                return render(request,"response.html",{"paytm":data_dict})
+                return redirect('/profile/orders')
             else:
                 return HttpResponse("checksum verify failed")
         return HttpResponse(status=200)
